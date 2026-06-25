@@ -12,7 +12,6 @@ import gradio as gr
 
 csv = "https://raw.githubusercontent.com/AnushaMahajan12/Canopyt/refs/heads/main/ShadeData.csv"
 tree_data = pd.read_csv(csv)
-#Split MasterScore into 2 separate lists
 threshold_values = []
 not_threshold_values = []
 for score in tree_data['MasterScore']:
@@ -22,9 +21,6 @@ for score in tree_data['MasterScore']:
     else:
         not_threshold_values.append(score)
         threshold_values.append(0)
-
-#Greater MasterScore is = the less sustainable the city is
-#Creates new MasterScore value without sustainability index (isn't relevant)
 masscore_values = []
 for index, row in tree_data.iterrows():
     traffic_index = row['TrafficProximityIndex']
@@ -36,8 +32,6 @@ for index, row in tree_data.iterrows():
     new_master_score = (traffic_index + pop_density + air_quality + low_income + heat_imperv + canopy_cover)/6
     masscore_values.append(new_master_score)
 tree_data['NewMasterScore'] = masscore_values
-
-#Creates new column for what lack of canopy cover has to be for MasterScore = 0.25
 thresholds = []
 for index, row in tree_data.iterrows():
     traffic_index = row['TrafficProximityIndex']
@@ -48,10 +42,9 @@ for index, row in tree_data.iterrows():
     new_master_score = row['NewMasterScore']
     canopy_differences = 1.5 - traffic_index - pop_density - air_quality - low_income - heat_imperv
     thresholds.append(canopy_differences)
-tree_data['CanopyCoverDifference'] = thresholds #threshold - all the indices = canopy dif (- = bad)
+tree_data['CanopyCoverDifference'] = thresholds
 
 tree_data.to_csv('updated_tree_data.csv', index=False)
-#files.download('updated_tree_data.csv')
 model_data = pd.read_csv('updated_tree_data.csv')
 
 model_data = model_data.dropna(subset=['TrafficProximityIndex', 'AirQualityIndex', 'LowIncomeIndex', 'CanopyCoverDifference'])
@@ -62,8 +55,6 @@ y = model_data['CanopyCoverDifference']
 X = sm.add_constant(X)
 model = sm.OLS(y, X).fit()
 print(model.summary())
-
-!pip install -q gradio
 
 def predict(TrafficProximityIndex, AirQualityIndex, LowIncomeIndex):
   input = pd.DataFrame([{
